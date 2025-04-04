@@ -24,8 +24,12 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/mypolls");
-    } catch (error: Error) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+     if (error instanceof Error) {
+      toast.error(`Failed to create poll: ${error.message}`);
+     } else {
+      toast.error("Failed to create poll due to an unknown error.");
+     }
     } finally {
       setLoading(false);
     }

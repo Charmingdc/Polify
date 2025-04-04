@@ -50,8 +50,12 @@ const CreatePoll = () => {
       const docRef = await addDoc(collection(db, "polls"), newPoll);
       toast.success("Poll created!");
       navigate(`/poll/${docRef.id}`);
-    } catch (error: Error) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+     if (error instanceof Error) {
+      toast.error(`Failed to create poll: ${error.message}`);
+     } else {
+      toast.error("Failed to create poll due to an unknown error.");
+     }
     } finally {
       setLoading(false);
     }

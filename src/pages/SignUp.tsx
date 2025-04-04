@@ -26,13 +26,18 @@ const SignUp = () => {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success("Account created successfully!");
       navigate("/create");
-    } catch (error: Error) {
-      toast.error(error.message || "Something went wrong.");
+    } catch (error: unknown) {
+     if (error instanceof Error) {
+      toast.error(`Failed to create poll: ${error.message}`);
+     } else {
+      toast.error("Failed to create poll due to an unknown error.");
+     }
     } finally {
       setLoading(false);
     }
   };
-
+  
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       {loading ? (
