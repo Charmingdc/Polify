@@ -53,11 +53,11 @@ const PublicFeed = () => {
                 key={poll.id}
                 className="bg-white/90 backdrop-blur-md border border-gray-200 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 space-y-2"
               >
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 line-clamp-1">
                   {poll.question}
                 </h2>
 
-                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
                   {poll.description?.trim()
                     ? poll.description
                     : "No description provided for this poll."}

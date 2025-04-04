@@ -100,12 +100,12 @@ const MyPolls = () => {
               key={poll.id}
               className="bg-white p-6 rounded-lg border border-gray-200 transition-transform transform hover:scale-105 hover:border-indigo-500"
             >
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2 line-clamp-1">
                 {poll.question}
               </h3>
 
               {poll.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                   {poll.description}
                 </p>
               )}
