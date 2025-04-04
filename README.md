@@ -95,8 +95,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 - **Adebayo Muis**
   - [GitHub](https://github.com/Charmingdc)
-  - [LinkedIn](https://www.linkedin.com/in/your-linkedin-profile)
-  - [Twitter](https://twitter.com/your-twitter-handle)
+  - [LinkedIn](https://www.linkedin.com/in/adebayo-muis)
+  - [Twitter](https://twitter.com/Charmingdc01)
 
 ---
 
