@@ -9,7 +9,8 @@ import {
 } from "firebase/firestore";
 import toast from 'react-hot-toast';
 import Loader from "../components/Loader";
-import { LinkIcon } from '@heroicons/react/solid'; // Added LinkIcon for the share button
+import { LinkIcon } from '@heroicons/react/solid'; 
+
 
 const VotePoll = () => {
   const { id } = useParams();
@@ -26,7 +27,7 @@ const VotePoll = () => {
       } else {
         toast.error("Poll not found");
       }
-      setLoading(false); // Set loading to false after fetching
+      setLoading(false); 
     };
 
     const fetchIp = async () => {
