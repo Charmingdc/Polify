@@ -64,7 +64,10 @@ const MyPolls = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
-      <h2 className="text-3xl font-bold mb-8 text-center text-indigo-600">My Polls</h2>
+      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-2">My Polls</h2>
+      <p className="text-center text-gray-600 mb-6">
+        You’ve created <span className="font-semibold text-indigo-600">{polls.length}</span> {polls.length === 1 ? "poll" : "polls"}.
+      </p>
 
       {loading ? (
         <div className="flex justify-center">

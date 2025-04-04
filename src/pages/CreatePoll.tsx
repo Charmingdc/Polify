@@ -38,11 +38,15 @@ const CreatePoll = () => {
     setLoading(true);
     try {
       const cleanOptions = options.filter((opt) => opt.trim() !== "");
+      const email = auth.currentUser.email || "anonymous@poll.com";
+      const creatorName = email.split("@")[0];
+
       const newPoll = {
         question: question.trim(),
         options: cleanOptions,
         votes: Array(cleanOptions.length).fill(0),
         createdBy: auth.currentUser.uid,
+        creatorName,
         createdAt: serverTimestamp(),
         voters: [],
       };
@@ -51,11 +55,11 @@ const CreatePoll = () => {
       toast.success("Poll created!");
       navigate(`/poll/${docRef.id}`);
     } catch (error: unknown) {
-     if (error instanceof Error) {
-      toast.error(`Failed to create poll: ${error.message}`);
-     } else {
-      toast.error("Failed to create poll due to an unknown error.");
-     }
+      if (error instanceof Error) {
+        toast.error(`Failed to create poll: ${error.message}`);
+      } else {
+        toast.error("Failed to create poll due to an unknown error.");
+      }
     } finally {
       setLoading(false);
     }

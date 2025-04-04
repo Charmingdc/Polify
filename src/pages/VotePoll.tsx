@@ -17,6 +17,7 @@ type Poll = {
   options: string[];
   votes: number[];
   voters: string[];
+  creatorName?: string; // Optional for backward compatibility
 };
 
 const VotePoll = () => {
@@ -54,7 +55,6 @@ const VotePoll = () => {
         setPoll(data);
 
         if (data.voters.includes(ip)) {
-          // Find which option they voted for
           const index = data.votes.findIndex((vote) => {
             const max = Math.max(...data.votes);
             return vote === max && data.voters.includes(ip);
@@ -98,7 +98,15 @@ const VotePoll = () => {
 
   return (
     <div className="max-w-xl mx-auto py-10 px-4">
+      <div className="text-center mb-2 text-sm text-gray-500">
+        Created by{" "}
+        <span className="font-medium text-indigo-600">
+          {poll?.creatorName || "Unknown Pollifier 😺"}
+        </span>
+      </div>
+
       <h2 className="text-2xl font-bold mb-4 text-center">{poll?.question}</h2>
+
       <ul className="space-y-3">
         {poll?.options.map((option, i) => {
           const hasVoted = poll.voters.includes(ip);
