@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { toast } from "react-hot-toast";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -23,21 +24,29 @@ const SignUp = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Add user to Firestore 'users' collection
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        joinedAt: serverTimestamp(),
+      });
+
       toast.success("Account created successfully!");
       navigate("/create");
     } catch (error: unknown) {
-     if (error instanceof Error) {
-      toast.error(`Failed to create poll: ${error.message}`);
-     } else {
-      toast.error("Failed to create poll due to an unknown error.");
-     }
+      if (error instanceof Error) {
+        toast.error(`Failed to create account: ${error.message}`);
+      } else {
+        toast.error("Failed to create account due to an unknown error.");
+      }
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       {loading ? (
@@ -45,7 +54,7 @@ const SignUp = () => {
       ) : (
         <form
           onSubmit={handleSignUp}
-          className="p-8 rounded-2xl w-full max-w-md bg-white shadow-xl"
+          className="p-8 rounded-2xl w-full max-w-md"
         >
           <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800">Sign Up</h2>
 
