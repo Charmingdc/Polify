@@ -32,12 +32,12 @@ const Home = () => {
         <img 
           src="/pollify.png"
           width="200" 
-          height="60"
+          height="40"
           alt="Pollify logo"
           className="mx-auto mb-2"
         />
 
-        <h1 className="text-5xl font-extrabold text-indigo-600 mb-6 leading-tight">
+        <h1 className="text-4xl font-extrabold text-indigo-600 mb-6 leading-tight">
           Welcome to Pollify
         </h1>
 
