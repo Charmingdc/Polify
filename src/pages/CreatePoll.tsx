@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -7,21 +7,26 @@ import Loader from "../components/Loader";
 
 const CreatePoll = () => {
   const [question, setQuestion] = useState("");
-  const [description, setDescription] = useState(""); // New state for description
+  const [description, setDescription] = useState(""); // State for description
   const [options, setOptions] = useState(["", ""]);
   const [loading, setLoading] = useState(false);
   const [pollType, setPollType] = useState<"public" | "private">("private");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Track dropdown state
   const navigate = useNavigate();
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!auth.currentUser) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleAddOption = () => {
     setOptions((prev) => [...prev, ""]);
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    setOptions((prev) =>
-      prev.map((opt, i) => (i === index ? value : opt))
-    );
+    setOptions((prev) => prev.map((opt, i) => (i === index ? value : opt)));
   };
 
   const isValidPoll = () => {
@@ -46,7 +51,7 @@ const CreatePoll = () => {
 
       const newPoll = {
         question: question.trim(),
-        description: description.trim(), // Adding description to poll object
+        description: description.trim(),
         options: cleanOptions,
         votes: Array(cleanOptions.length).fill(0),
         createdBy: auth.currentUser.uid,
@@ -71,8 +76,8 @@ const CreatePoll = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-8">
         Create a New Poll
       </h2>
 
@@ -83,22 +88,22 @@ const CreatePoll = () => {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 bg-white shadow-md rounded-xl p-6 border border-gray-100"
+          className="space-y-6 bg-white shadow-lg rounded-xl p-8 border border-gray-200"
         >
           <input
             type="text"
             placeholder="What do you want to ask?"
-            className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-full border border-gray-300 rounded-lg p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
 
           <textarea
             placeholder="Describe your poll (optional)"
-            className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-full border border-gray-300 rounded-lg p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={4} // Optional text area for description
+            rows={4}
           />
 
           {options.map((option, i) => (
@@ -106,7 +111,7 @@ const CreatePoll = () => {
               key={i}
               type="text"
               placeholder={`Option ${i + 1}`}
-              className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              className="w-full border border-gray-300 rounded-lg p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               value={option}
               onChange={(e) => handleOptionChange(i, e.target.value)}
             />
@@ -128,10 +133,12 @@ const CreatePoll = () => {
               Poll Visibility
             </label>
             <div
-              className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition cursor-pointer"
+              className="w-full border border-gray-300 rounded-lg p-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              {pollType === "private" ? "Private (only you can share the link)" : "Public (visible to all users)"}
+              {pollType === "private"
+                ? "Private (only you can share the link)"
+                : "Public (visible to all users)"}
             </div>
             {isDropdownOpen && (
               <div className="absolute mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10">
@@ -159,7 +166,7 @@ const CreatePoll = () => {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition shadow"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-shadow shadow-md"
           >
             Create Poll
           </button>

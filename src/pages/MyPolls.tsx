@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, query, where, getDocs, deleteDoc, doc, orderBy, QuerySnapshot } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import Loader from "../components/Loader";
 import { EyeIcon, TrashIcon } from "@heroicons/react/solid";
 import toast from "react-hot-toast";
 import { Dialog } from "@headlessui/react";
+import { User } from "firebase/auth"; // Add this import
+import { Timestamp } from "firebase/firestore"; // Add this import
 
 // Define poll structure
 type Poll = {
@@ -23,6 +18,7 @@ type Poll = {
   options: string[];
   votes: number[];
   voters: string[];
+  createdAt: Timestamp; // Firebase timestamp field
 };
 
 const MyPolls = () => {
@@ -30,23 +26,35 @@ const MyPolls = () => {
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [pollToDelete, setPollToDelete] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null); // Store user state
 
   useEffect(() => {
-    const fetchPolls = async () => {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return;
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user || null);
+    });
+    return () => unsubscribe();
+  }, []);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchPolls = async () => {
       try {
-        const q = query(
+        const pollsQuery = query(
           collection(db, "polls"),
-          where("createdBy", "==", currentUser.uid)
+          where("createdBy", "==", currentUser.uid),
+          orderBy("createdAt", "desc")
         );
-        const snapshot = await getDocs(q);
-        const docs = snapshot.docs.map((doc) => ({
+        const snapshot: QuerySnapshot = await getDocs(pollsQuery);
+        const fetchedPolls = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Poll[];
-        setPolls(docs);
+
+        setPolls(fetchedPolls);
       } catch (error) {
         console.error("Error fetching polls:", error);
       } finally {
@@ -55,7 +63,7 @@ const MyPolls = () => {
     };
 
     fetchPolls();
-  }, []);
+  }, [currentUser]);
 
   const handleDeletePoll = async () => {
     if (!pollToDelete) return;
@@ -64,28 +72,22 @@ const MyPolls = () => {
     try {
       await deleteDoc(doc(db, "polls", pollToDelete));
       toast.success("Poll deleted successfully!");
-
+      setPolls((prevPolls) => prevPolls.filter((poll) => poll.id !== pollToDelete));
+    } catch (error) {
+      toast.error("Failed to delete poll.");
+      console.error("Error deleting poll:", error);
+    } finally {
       setIsDeleteDialogOpen(false);
       setPollToDelete(null);
-      setPolls((prevPolls) =>
-        prevPolls.filter((poll) => poll.id !== pollToDelete)
-      );
-    } catch (error) {
-      console.error("Error deleting poll:", error);
-      toast.error("Failed to delete poll.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
-      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-2">
-        My Polls
-      </h2>
+      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-2">My Polls</h2>
       <p className="text-center text-gray-600 mb-6">
-        You’ve created{" "}
-        <span className="font-semibold text-indigo-600">{polls.length}</span>{" "}
+        You’ve created <span className="font-semibold text-indigo-600">{polls.length}</span>{" "}
         {polls.length === 1 ? "poll" : "polls"}.
       </p>
 
@@ -100,14 +102,10 @@ const MyPolls = () => {
               key={poll.id}
               className="bg-white p-6 rounded-lg border border-gray-200 transition-transform transform hover:scale-105 hover:border-indigo-500"
             >
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2 line-clamp-1">
-                {poll.question}
-              </h3>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2 line-clamp-1">{poll.question}</h3>
 
               {poll.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {poll.description}
-                </p>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{poll.description}</p>
               )}
 
               <div className="flex justify-between items-center space-x-6">
@@ -136,18 +134,12 @@ const MyPolls = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-      >
+      <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
           <Dialog.Panel className="bg-white p-8 rounded-lg max-w-sm mx-auto w-full">
-            <Dialog.Title className="text-2xl font-semibold text-gray-800 mb-4">
-              Confirm Deletion
-            </Dialog.Title>
+            <Dialog.Title className="text-2xl font-semibold text-gray-800 mb-4">Confirm Deletion</Dialog.Title>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this poll? This action cannot be
-              undone.
+              Are you sure you want to delete this poll? This action cannot be undone.
             </p>
 
             <div className="flex justify-between gap-4">

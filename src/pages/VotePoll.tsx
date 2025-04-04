@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
-import { LinkIcon } from "@heroicons/react/solid";
+import { ThumbUpIcon, ShareIcon } from "@heroicons/react/solid";
 
 // Poll structure
 type Poll = {
   question: string;
-  description?: string; // <-- Added description
+  description?: string;
   options: string[];
   votes: number[];
   voters: string[];
@@ -28,7 +23,7 @@ const VotePoll = () => {
   const [loading, setLoading] = useState(true);
   const [votedIndex, setVotedIndex] = useState<number | null>(null);
 
-  // 1. Get IP
+  // Fetch user's IP address
   useEffect(() => {
     const fetchIp = async () => {
       try {
@@ -39,11 +34,10 @@ const VotePoll = () => {
         console.error("IP fetch failed", err);
       }
     };
-
     fetchIp();
   }, []);
 
-  // 2. Fetch poll only after IP is ready
+  // Fetch poll data once IP is available
   useEffect(() => {
     const fetchPoll = async () => {
       if (!ip || !id) return;
@@ -56,12 +50,10 @@ const VotePoll = () => {
         setPoll(data);
 
         if (data.voters.includes(ip)) {
-          const index = data.votes.findIndex((vote) => {
-            const max = Math.max(...data.votes);
-            return vote === max && data.voters.includes(ip);
-          });
-
-          setVotedIndex(index);
+          const votedOption = data.votes.findIndex(
+            (vote) => vote === Math.max(...data.votes) && data.voters.includes(ip)
+          );
+          setVotedIndex(votedOption);
         }
       } else {
         toast.error("Poll not found");
@@ -98,40 +90,41 @@ const VotePoll = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="max-w-xl mx-auto py-10 px-4">
-      <div className="text-center mb-2 text-sm text-gray-500">
+    <div className="max-w-3xl mx-auto py-12 px-6">
+      <div className="text-center mb-4 text-sm text-gray-500">
         Created by{" "}
         <span className="font-medium text-indigo-600">
           {poll?.creatorName || "Unknown Pollifier 😺"}
         </span>
       </div>
 
-      <h2 className="text-2xl font-bold mb-2 text-center">{poll?.question}</h2>
+      <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-4">{poll?.question}</h2>
 
-      <p className="text-center text-gray-500 mb-6">
-        {poll?.description?.trim()
-          ? poll.description
-          : "Very weird poll, no description 🤷🏼"}
+      <p className="text-center text-gray-500 mb-8 max-w-2xl mx-auto">
+        {poll?.description?.trim() || "No description provided for this poll."}
       </p>
 
-      <ul className="space-y-3">
-        {poll?.options.map((option, i) => {
+      <ul className="space-y-4">
+        {poll?.options.map((option, index) => {
           const hasVoted = poll.voters.includes(ip);
-          const isVotedOption = hasVoted && i === votedIndex;
+          const isVotedOption = hasVoted && index === votedIndex;
 
           return (
-            <li key={i}>
+            <li key={index}>
               <button
-                className={`w-full p-3 rounded-md font-medium flex justify-between items-center transition ${
+                className={`w-full p-4 rounded-lg font-medium flex justify-between items-center transition-transform ${
                   isVotedOption
                     ? "bg-green-100 text-green-800"
                     : "bg-indigo-50 hover:bg-indigo-100 text-indigo-800"
                 }`}
-                onClick={() => handleVote(i)}
+                onClick={() => handleVote(index)}
               >
-                <span>{option}</span>
-                <span className="text-sm text-gray-600">
-                  {poll.votes[i]} votes
+                <span className="flex items-center space-x-2">
+                  <ThumbUpIcon className={`w-5 h-5 ${isVotedOption ? "text-green-600" : "text-indigo-600"}`} />
+                  <span>{option}</span>
+                </span>
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <span>{poll.votes[index]} votes</span>
                 </span>
               </button>
             </li>
@@ -139,15 +132,15 @@ const VotePoll = () => {
         })}
       </ul>
 
-      <div className="mt-6 text-center">
+      <div className="mt-8 text-center">
         <button
           onClick={() => {
             navigator.clipboard.writeText(window.location.href);
-            toast.success("Poll link copied!");
+            toast.success("Poll link copied to clipboard!");
           }}
-          className="text-sm text-indigo-600 hover:underline flex items-center justify-center space-x-2 bg-indigo-100 hover:bg-indigo-200 p-3 rounded-full mt-4"
+          className="text-sm text-indigo-600 hover:underline flex items-center justify-center space-x-2 bg-indigo-100 hover:bg-indigo-200 p-4 rounded-full transition duration-200"
         >
-          <LinkIcon className="w-5 h-5" />
+          <ShareIcon className="w-5 h-5" />
           <span>Share this poll</span>
         </button>
       </div>

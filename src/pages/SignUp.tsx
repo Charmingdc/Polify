@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { toast } from "react-hot-toast";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -48,21 +49,24 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-screen flex items-center justify-center bg-gradient-to-r from-indigo-300 to-blue-200 overflow-hidden">
       {loading ? (
         <Loader />
       ) : (
         <form
           onSubmit={handleSignUp}
-          className="p-8 rounded-2xl w-full max-w-md"
+          className="p-10 bg-white rounded-3xl w-11/12 max-w-lg shadow-lg"
         >
-          <h2 className="text-3xl font-semibold text-center mb-6 text-gray-800">Sign Up</h2>
+          <h2 className="text-4xl font-semibold text-center text-gray-800 mb-6">
+            Create an Account! 🎉
+          </h2>
+          <p className="text-center text-gray-500 mb-4">Sign up to get started</p>
 
           <input
             type="email"
             ref={emailRef}
             placeholder="Email"
-            className="w-full border p-3 mb-4 rounded-xl text-gray-700 focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 p-4 mb-6 rounded-xl text-gray-700 focus:ring-2 focus:ring-indigo-500"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -71,7 +75,7 @@ const SignUp = () => {
           <input
             type="password"
             placeholder="Password"
-            className="w-full border p-3 mb-6 rounded-xl text-gray-700 focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 p-4 mb-6 rounded-xl text-gray-700 focus:ring-2 focus:ring-indigo-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -83,6 +87,15 @@ const SignUp = () => {
           >
             Sign Up
           </button>
+
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-semibold">
+                Login here
+              </Link>
+            </p>
+          </div>
         </form>
       )}
     </div>
