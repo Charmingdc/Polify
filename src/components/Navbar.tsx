@@ -26,6 +26,12 @@ const Navbar = () => {
       return (
         <>
           <Link
+            to="/feed"
+            onClick={handleLinkClick}
+            className="text-gray-700 hover:text-indigo-600 transition font-medium">
+            Feed
+          </Link>
+          <Link
             to="/create"
             onClick={handleLinkClick}
             className="text-gray-700 hover:text-indigo-600 transition font-medium"

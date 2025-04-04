@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { Link } from "react-router-dom";
 import Loader from "../components/Loader";
 import { EyeIcon, TrashIcon } from "@heroicons/react/solid";
@@ -11,6 +18,7 @@ import { Dialog } from "@headlessui/react";
 type Poll = {
   id: string;
   question: string;
+  description?: string;
   createdBy: string;
   options: string[];
   votes: number[];
@@ -29,9 +37,15 @@ const MyPolls = () => {
       if (!currentUser) return;
 
       try {
-        const q = query(collection(db, "polls"), where("createdBy", "==", currentUser.uid));
+        const q = query(
+          collection(db, "polls"),
+          where("createdBy", "==", currentUser.uid)
+        );
         const snapshot = await getDocs(q);
-        const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Poll[];
+        const docs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Poll[];
         setPolls(docs);
       } catch (error) {
         console.error("Error fetching polls:", error);
@@ -53,7 +67,9 @@ const MyPolls = () => {
 
       setIsDeleteDialogOpen(false);
       setPollToDelete(null);
-      setPolls((prevPolls) => prevPolls.filter((poll) => poll.id !== pollToDelete));
+      setPolls((prevPolls) =>
+        prevPolls.filter((poll) => poll.id !== pollToDelete)
+      );
     } catch (error) {
       console.error("Error deleting poll:", error);
       toast.error("Failed to delete poll.");
@@ -64,9 +80,13 @@ const MyPolls = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
-      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-2">My Polls</h2>
+      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-2">
+        My Polls
+      </h2>
       <p className="text-center text-gray-600 mb-6">
-        You’ve created <span className="font-semibold text-indigo-600">{polls.length}</span> {polls.length === 1 ? "poll" : "polls"}.
+        You’ve created{" "}
+        <span className="font-semibold text-indigo-600">{polls.length}</span>{" "}
+        {polls.length === 1 ? "poll" : "polls"}.
       </p>
 
       {loading ? (
@@ -80,7 +100,16 @@ const MyPolls = () => {
               key={poll.id}
               className="bg-white p-6 rounded-lg border border-gray-200 transition-transform transform hover:scale-105 hover:border-indigo-500"
             >
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4">{poll.question}</h3>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                {poll.question}
+              </h3>
+
+              {poll.description && (
+                <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+                  {poll.description}
+                </p>
+              )}
+
               <div className="flex justify-between items-center space-x-6">
                 <Link
                   to={`/poll/${poll.id}`}
@@ -107,14 +136,18 @@ const MyPolls = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+      >
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
           <Dialog.Panel className="bg-white p-8 rounded-lg max-w-sm mx-auto w-full">
             <Dialog.Title className="text-2xl font-semibold text-gray-800 mb-4">
               Confirm Deletion
             </Dialog.Title>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this poll? This action cannot be undone.
+              Are you sure you want to delete this poll? This action cannot be
+              undone.
             </p>
 
             <div className="flex justify-between gap-4">

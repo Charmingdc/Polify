@@ -14,10 +14,11 @@ import { LinkIcon } from "@heroicons/react/solid";
 // Poll structure
 type Poll = {
   question: string;
+  description?: string; // <-- Added description
   options: string[];
   votes: number[];
   voters: string[];
-  creatorName?: string; // Optional for backward compatibility
+  creatorName?: string;
 };
 
 const VotePoll = () => {
@@ -105,7 +106,13 @@ const VotePoll = () => {
         </span>
       </div>
 
-      <h2 className="text-2xl font-bold mb-4 text-center">{poll?.question}</h2>
+      <h2 className="text-2xl font-bold mb-2 text-center">{poll?.question}</h2>
+
+      <p className="text-center text-gray-500 mb-6">
+        {poll?.description?.trim()
+          ? poll.description
+          : "Very weird poll, no description 🤷🏼"}
+      </p>
 
       <ul className="space-y-3">
         {poll?.options.map((option, i) => {

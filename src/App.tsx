@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp";
 import CreatePoll from "./pages/CreatePoll";
 import MyPolls from "./pages/MyPolls";
 import VotePoll from "./pages/VotePoll";
+import PublicFeed from "./pages/PublicFeed";
 import NotFound from "./pages/NotFound";
 
 
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/create" element={<CreatePoll />} />
+        <Route path="/feed" element={<PublicFeed />} />
         <Route path="/mypolls" element={<MyPolls />} />
         <Route path="/poll/:id" element={<VotePoll />} />
         <Route path="*" element={<NotFound />} />

@@ -35,7 +35,7 @@ const SignUp = () => {
       });
 
       toast.success("Account created successfully!");
-      navigate("/create");
+      navigate("/feed");
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(`Failed to create account: ${error.message}`);
