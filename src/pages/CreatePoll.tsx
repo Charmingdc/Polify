@@ -12,41 +12,46 @@ const CreatePoll = () => {
   const navigate = useNavigate();
 
   const handleAddOption = () => {
-    setOptions([...options, ""]);
+    setOptions((prev) => [...prev, ""]);
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    const updated = [...options];
-    updated[index] = value;
-    setOptions(updated);
+    setOptions((prev) =>
+      prev.map((opt, i) => (i === index ? value : opt))
+    );
+  };
+
+  const isValidPoll = () => {
+    const validOptions = options.filter((opt) => opt.trim() !== "");
+    return question.trim() !== "" && validOptions.length >= 2;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth.currentUser) return;
 
-    // Check if there is at least one question and two options
-    if (question.trim() === "" || options.filter(option => option.trim() !== "").length < 2) {
-      toast.error("Poll must have at least one question and two valid options.");
+    if (!isValidPoll()) {
+      toast.error("Poll must have a question and at least two options.");
       return;
     }
 
     setLoading(true);
     try {
-      const poll = {
+      const cleanOptions = options.filter((opt) => opt.trim() !== "");
+      const newPoll = {
         question: question.trim(),
-        options: options.filter(option => option.trim() !== ""), // Only save non-empty options
-        votes: Array(options.length).fill(0),
+        options: cleanOptions,
+        votes: Array(cleanOptions.length).fill(0),
         createdBy: auth.currentUser.uid,
         createdAt: serverTimestamp(),
         voters: [],
       };
 
-      const docRef = await addDoc(collection(db, "polls"), poll);
+      const docRef = await addDoc(collection(db, "polls"), newPoll);
       toast.success("Poll created!");
       navigate(`/poll/${docRef.id}`);
-    } catch (err) {
-      toast.error("Failed to create poll");
+    } catch (error: Error) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

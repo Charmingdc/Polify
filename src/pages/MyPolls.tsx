@@ -1,6 +1,3 @@
-
-// src/pages/MyPolls.tsx
-
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
@@ -10,8 +7,18 @@ import { EyeIcon, TrashIcon } from "@heroicons/react/solid";
 import toast from "react-hot-toast";
 import { Dialog } from "@headlessui/react";
 
+// Define poll structure
+type Poll = {
+  id: string;
+  question: string;
+  createdBy: string;
+  options: string[];
+  votes: number[];
+  voters: string[];
+};
+
 const MyPolls = () => {
-  const [polls, setPolls] = useState<any[]>([]);
+  const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [pollToDelete, setPollToDelete] = useState<string | null>(null);
@@ -24,7 +31,7 @@ const MyPolls = () => {
       try {
         const q = query(collection(db, "polls"), where("createdBy", "==", currentUser.uid));
         const snapshot = await getDocs(q);
-        const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Poll[];
         setPolls(docs);
       } catch (error) {
         console.error("Error fetching polls:", error);

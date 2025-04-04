@@ -26,7 +26,7 @@ const SignUp = () => {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success("Account created successfully!");
       navigate("/create");
-    } catch (error: any) {
+    } catch (error: Error) {
       toast.error(error.message || "Something went wrong.");
     } finally {
       setLoading(false);

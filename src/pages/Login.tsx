@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import Loader from "../components/Loader";
 
 const Login = () => {
@@ -23,8 +24,8 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/mypolls");
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error: Error) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

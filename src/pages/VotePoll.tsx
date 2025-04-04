@@ -7,56 +7,80 @@ import {
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import Loader from "../components/Loader";
-import { LinkIcon } from '@heroicons/react/solid';
+import { LinkIcon } from "@heroicons/react/solid";
+
+// Poll structure
+type Poll = {
+  question: string;
+  options: string[];
+  votes: number[];
+  voters: string[];
+};
 
 const VotePoll = () => {
-  const { id } = useParams();
-  const [poll, setPoll] = useState<any>(null);
+  const { id } = useParams<{ id: string }>();
+  const [poll, setPoll] = useState<Poll | null>(null);
   const [ip, setIp] = useState("");
   const [loading, setLoading] = useState(true);
   const [votedIndex, setVotedIndex] = useState<number | null>(null);
 
+  // 1. Get IP
   useEffect(() => {
-    const fetchPoll = async () => {
-      const pollRef = doc(db, "polls", id!);
-      const snapshot = await getDoc(pollRef);
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setPoll(data);
-        if (data.voters.includes(ip)) {
-          // Find the index the user voted for
-          const maxVotes = Math.max(...data.votes);
-          const index = data.votes.findIndex(vote => vote === maxVotes);
-          setVotedIndex(index);
-        }
-      } else {
-        toast.error("Poll not found");
-      }
-      setLoading(false);
-    };
-
     const fetchIp = async () => {
       try {
         const res = await fetch("https://api.ipify.org?format=json");
         const data = await res.json();
         setIp(data.ip);
       } catch (err) {
-        console.error("Error fetching IP:", err);
+        console.error("IP fetch failed", err);
       }
     };
 
-    fetchIp().then(fetchPoll);
-  }, [id, ip]);
+    fetchIp();
+  }, []);
+
+  // 2. Fetch poll only after IP is ready
+  useEffect(() => {
+    const fetchPoll = async () => {
+      if (!ip || !id) return;
+
+      const pollRef = doc(db, "polls", id);
+      const snapshot = await getDoc(pollRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data() as Poll;
+        setPoll(data);
+
+        if (data.voters.includes(ip)) {
+          // Find which option they voted for
+          const index = data.votes.findIndex((vote) => {
+            const max = Math.max(...data.votes);
+            return vote === max && data.voters.includes(ip);
+          });
+
+          setVotedIndex(index);
+        }
+      } else {
+        toast.error("Poll not found");
+      }
+
+      setLoading(false);
+    };
+
+    if (ip) fetchPoll();
+  }, [ip, id]);
 
   const handleVote = async (index: number) => {
-    if (!poll || poll.voters.includes(ip)) {
-      toast.error("You've already voted!");
+    if (!poll || !id || !ip) return;
+
+    if (poll.voters.includes(ip)) {
+      toast.error("You’ve already voted!");
       return;
     }
 
-    const pollRef = doc(db, "polls", id!);
+    const pollRef = doc(db, "polls", id);
     const updatedVotes = [...poll.votes];
     updatedVotes[index] += 1;
 
@@ -74,26 +98,26 @@ const VotePoll = () => {
 
   return (
     <div className="max-w-xl mx-auto py-10 px-4">
-      <h2 className="text-2xl font-bold mb-4 text-center">{poll.question}</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">{poll?.question}</h2>
       <ul className="space-y-3">
-        {poll.options.map((option: string, i: number) => {
+        {poll?.options.map((option, i) => {
           const hasVoted = poll.voters.includes(ip);
           const isVotedOption = hasVoted && i === votedIndex;
 
           return (
             <li key={i}>
               <button
-                className={`w-full p-3 rounded-md font-medium flex justify-between items-center transition
-                  ${
-                    isVotedOption
-                      ? "bg-green-100 text-green-800"
-                      : "bg-indigo-50 hover:bg-indigo-100 text-indigo-800"
-                  }`}
+                className={`w-full p-3 rounded-md font-medium flex justify-between items-center transition ${
+                  isVotedOption
+                    ? "bg-green-100 text-green-800"
+                    : "bg-indigo-50 hover:bg-indigo-100 text-indigo-800"
+                }`}
                 onClick={() => handleVote(i)}
-                disabled={hasVoted}
               >
                 <span>{option}</span>
-                <span className="text-sm text-gray-600">{poll.votes[i]} votes</span>
+                <span className="text-sm text-gray-600">
+                  {poll.votes[i]} votes
+                </span>
               </button>
             </li>
           );
