@@ -38,7 +38,7 @@ const Home = () => {
           className="mx-auto -mb-4 w-[60%] h-[12rem]"
         />
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-indigo-600 mb-6 leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-indigo-600 mb-4 leading-tight">
           Welcome to Pollify
         </h1>
 
